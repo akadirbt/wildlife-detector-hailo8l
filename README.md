@@ -17,7 +17,7 @@ Real-time wildlife detection and deterrent system using a Raspberry Pi 5, Hailo-
 
 | Bear — 0.88 | Raccoon — 0.78 | Deer — 0.83 |
 |---|---|---|
-| ![bear detection](assets/detection_bear_0.88.jpg) | ![raccoon detection](assets/detection_raccoon_0.78.jpg) | ![deer detection](assets/detection_deer_0.83.jpg) |
+| ![bear detection](assets/20260417_200210_738_frame84915_bear.jpg) | ![raccoon detection](assets/20260417_200655_359_frame3384_raccoon.jpg) | ![deer detection](assets/20260417_202846_829_frame4190_deer.jpg) |
 
 All screenshots captured from the live MJPEG stream on a phone browser. PIR gate was active in all shots (~28 FPS sustained inference).
 
