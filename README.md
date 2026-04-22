@@ -10,7 +10,7 @@ Real-time wildlife detection and deterrent system using a Raspberry Pi 5, Hailo-
 
 | | |
 |---|---|
-| ![Setup overview](assets/setup_overview.jpg) | ![Wiring close-up](assets/setup_wiring.jpg) |
+| ![Setup overview](assets/IMG_3217.JPEG) | ![Wiring close-up](assets/IMG_3216.JPEG) |
 | Full system: Pi 5, Hailo-8L M.2 HAT, breadboard peripherals, 3D-printed enclosure with CSI camera | Wiring detail: rainbow GPIO ribbon, ADS1115, CSI flat cable, PIR and LED connections |
 
 ### Live Detections (MJPEG preview via browser)
