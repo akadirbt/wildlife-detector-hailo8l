@@ -1,0 +1,16 @@
+[Unit]
+Description=Wildlife Hailo Detector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ecet400/hailo_detector
+ExecStart=/home/ecet400/hailo_detector/build/hailo_detector --detector-id garden-pi-01
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

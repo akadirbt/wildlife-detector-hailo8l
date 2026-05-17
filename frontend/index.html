@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0812">
+    <title>Wildwatch Companion</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Wildwatch Companion</p>
+                <h1>Garden Monitor</h1>
+            </div>
+            <button class="icon-button" id="install-button" type="button" hidden aria-label="Install app">
+                Install
+            </button>
+        </header>
+
+        <section class="connection-strip" id="connection-strip" aria-live="polite">
+            <span class="status-pill online" id="status-detector">Detector live</span>
+            <span class="status-pill online" id="status-stream">Stream ready</span>
+            <span class="status-pill pending" id="status-backend">Backend pending</span>
+            <span class="status-pill mock" id="status-mode">Simulation mode</span>
+        </section>
+
+        <main class="screen-stack">
+            <section class="screen is-active" data-screen="dashboard">
+                <section class="hero-band">
+                    <div class="hero-copy">
+                        <p class="eyebrow">Field status</p>
+                        <h2>Watching the yard without babysitting the yard.</h2>
+                        <p id="hero-summary">Last activity was a raccoon near the north fence 2 minutes ago.</p>
+                    </div>
+                    <div class="hero-media">
+                        <img src="/other/20260417_200655_359_frame3384_raccoon.jpg" alt="Recent raccoon detection">
+                    </div>
+                </section>
+
+                <section class="metric-grid">
+                    <article class="metric-card accent">
+                        <p>System</p>
+                        <strong id="metric-system">Active</strong>
+                        <span id="metric-uptime">Uptime 4h 12m</span>
+                    </article>
+                    <article class="metric-card">
+                        <p>FPS</p>
+                        <strong id="metric-fps">28.4</strong>
+                        <span>Rolling live rate</span>
+                    </article>
+                    <article class="metric-card">
+                        <p>Temperature</p>
+                        <strong id="metric-temp">74.2 F</strong>
+                        <span>Sensor feed</span>
+                    </article>
+                    <article class="metric-card">
+                        <p>PIR</p>
+                        <strong id="metric-pir">Armed</strong>
+                        <span>Window active</span>
+                    </article>
+                </section>
+
+                <section class="content-band">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Recent activity</p>
+                            <h3>Latest sightings</h3>
+                        </div>
+                        <button class="text-action" data-nav-target="detections" type="button">Open history</button>
+                    </div>
+                    <div class="timeline-list" id="dashboard-feed"></div>
+                </section>
+            </section>
+
+            <section class="screen" data-screen="live">
+                <section class="content-band live-layout">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Live camera</p>
+                            <h3>Field view</h3>
+                        </div>
+                        <button class="text-action" id="refresh-stream" type="button">Refresh stream</button>
+                    </div>
+
+                    <div class="stream-stage" id="stream-stage">
+                        <img
+                            id="stream-image"
+                            src="/other/20260417_202846_829_frame4190_deer.jpg"
+                            alt="Live stream preview"
+                        >
+                        <div class="stream-overlay">
+                            <div class="detection-box priority" id="mock-box"></div>
+                            <div class="stream-chip" id="stream-label">Deer 0.83</div>
+                        </div>
+                    </div>
+
+                    <div class="stream-stats">
+                        <article>
+                            <p>Source</p>
+                            <strong id="stream-source">Mock still</strong>
+                        </article>
+                        <article>
+                            <p>Resolution</p>
+                            <strong id="stream-resolution">1536 x 864</strong>
+                        </article>
+                        <article>
+                            <p>Last event</p>
+                            <strong id="stream-last-event">raccoon 2m ago</strong>
+                        </article>
+                    </div>
+                </section>
+            </section>
+
+            <section class="screen" data-screen="detections">
+                <section class="content-band">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Detection archive</p>
+                            <h3>Browse sightings</h3>
+                        </div>
+                        <button class="text-action" id="simulate-event" type="button">Simulate sighting</button>
+                    </div>
+                    <div class="detection-list" id="detections-list"></div>
+                </section>
+            </section>
+
+            <section class="screen" data-screen="ask">
+                <section class="content-band ask-layout">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Ask AI</p>
+                            <h3>Field assistant</h3>
+                        </div>
+                        <span class="status-pill pending">Backend hook pending</span>
+                    </div>
+
+                    <div class="chat-thread" id="chat-thread"></div>
+
+                    <form class="chat-compose" id="chat-form">
+                        <label class="sr-only" for="chat-input">Ask a question</label>
+                        <input id="chat-input" name="question" placeholder="What happened today?" autocomplete="off">
+                        <button type="submit">Send</button>
+                    </form>
+                </section>
+            </section>
+
+            <section class="screen" data-screen="settings">
+                <section class="content-band">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Settings</p>
+                            <h3>Read-only control room</h3>
+                        </div>
+                        <span class="status-pill pending">Read-only in MVP</span>
+                    </div>
+
+                    <div class="settings-list">
+                        <article class="setting-row">
+                            <div>
+                                <h4>Detector ID</h4>
+                                <p>Main field node</p>
+                            </div>
+                            <strong>garden-pi-01</strong>
+                        </article>
+                        <article class="setting-row">
+                            <div>
+                                <h4>Confidence threshold</h4>
+                                <p>Current detector gate</p>
+                            </div>
+                            <strong>0.40</strong>
+                        </article>
+                        <article class="setting-row">
+                            <div>
+                                <h4>Track IoU</h4>
+                                <p>Sighting match threshold</p>
+                            </div>
+                            <strong>0.30</strong>
+                        </article>
+                        <article class="setting-row">
+                            <div>
+                                <h4>Update cadence</h4>
+                                <p>Companion refresh window</p>
+                            </div>
+                            <strong>500 ms</strong>
+                        </article>
+                        <article class="setting-row">
+                            <div>
+                                <h4>Companion</h4>
+                                <p>PNG swapper ready</p>
+                            </div>
+                            <label class="toggle">
+                                <input id="companion-toggle" type="checkbox" checked>
+                                <span></span>
+                            </label>
+                        </article>
+                    </div>
+
+                    <div class="content-band subtle">
+                        <div class="section-head compact">
+                            <div>
+                                <p class="eyebrow">Simulation</p>
+                                <h3>Frontend-only event harness</h3>
+                            </div>
+                        </div>
+                        <div class="simulation-actions">
+                            <button class="ghost-button" data-sim-label="deer" type="button">Trigger deer</button>
+                            <button class="ghost-button" data-sim-label="raccoon" type="button">Trigger raccoon</button>
+                            <button class="ghost-button" data-sim-label="bear" type="button">Trigger bear</button>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <div class="kanna-companion kanna-idle" id="kanna-companion">
+            <img id="kanna-image" alt="" hidden>
+            <span id="kanna-state-label" hidden>idle</span>
+        </div>
+
+        <nav class="tabbar" aria-label="Primary">
+            <button class="tab is-active" data-nav-target="dashboard" type="button">Dashboard</button>
+            <button class="tab" data-nav-target="live" type="button">Live</button>
+            <button class="tab" data-nav-target="detections" type="button">Detections</button>
+            <button class="tab" data-nav-target="ask" type="button">Ask AI</button>
+            <button class="tab" data-nav-target="settings" type="button">Settings</button>
+        </nav>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>

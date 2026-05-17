@@ -1,0 +1,17 @@
+{
+  "name": "Wildwatch Companion",
+  "short_name": "Wildwatch",
+  "description": "Mobile companion app for the Raspberry Pi wildlife detector.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0812",
+  "theme_color": "#0a0812",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

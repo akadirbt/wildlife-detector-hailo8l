@@ -84,6 +84,7 @@
 #include <optional>
 #include <sstream>
 #include <unordered_map>
+#include <utility>
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -99,6 +100,8 @@
 #include "hailo/hailort.hpp"
 #include "hailo/inference_pipeline.hpp"
 #include "gpio_trigger.hpp"
+#include "event_sink.hpp"
+#include "sighting_tracker.hpp"
 
 using namespace hailort;
 
@@ -203,6 +206,14 @@ static constexpr bool DEFAULT_SAVE_DETECTION_FRAMES = true;
 static const std::string DEFAULT_DETECTION_FRAME_DIR =
     "/home/ecet400/hailo_detector/detections";
 static constexpr float DETECTION_FRAME_SAVE_INTERVAL_SEC = 1.0f;
+
+// App/backend event export settings.
+static constexpr bool DEFAULT_ENABLE_EVENT_EXPORT = true;
+static const std::string DEFAULT_DETECTOR_ID = "garden-pi-01";
+static const std::string DEFAULT_EVENT_SOCKET_PATH = "/tmp/det.sock";
+static constexpr float DEFAULT_TRACK_MATCH_IOU_THRESH = 0.30f;
+static constexpr int DEFAULT_TRACK_UPDATE_INTERVAL_MS = 500;
+static constexpr int DEFAULT_TRACK_LOST_TIMEOUT_MS = 2000;
 
 static const std::vector<std::string> CLASS_NAMES = {
     "bear", "coyote", "deer", "fox", "possum",
@@ -390,6 +401,12 @@ struct RuntimeConfig {
     int serve_port_tries = DEFAULT_PREVIEW_PORT_TRIES;
     bool save_detection_frames = DEFAULT_SAVE_DETECTION_FRAMES;
     std::string detection_frame_dir = DEFAULT_DETECTION_FRAME_DIR;
+    bool enable_event_export = DEFAULT_ENABLE_EVENT_EXPORT;
+    std::string detector_id = DEFAULT_DETECTOR_ID;
+    std::string event_socket_path = DEFAULT_EVENT_SOCKET_PATH;
+    float track_match_iou_thresh = DEFAULT_TRACK_MATCH_IOU_THRESH;
+    int track_update_interval_ms = DEFAULT_TRACK_UPDATE_INTERVAL_MS;
+    int track_lost_timeout_ms = DEFAULT_TRACK_LOST_TIMEOUT_MS;
 };
 
 
@@ -406,6 +423,36 @@ static std::string label_for_class(int class_id) {
         return CLASS_NAMES[class_id];
     }
     return "cls" + std::to_string(class_id);
+}
+
+static std::vector<TrackedDetection> to_tracked_detections(const std::vector<Detection>& detections) {
+    std::vector<TrackedDetection> tracked;
+    tracked.reserve(detections.size());
+    for (const auto& detection : detections) {
+        tracked.push_back({
+            label_for_class(detection.class_id),
+            detection.score,
+            DetectionBox{detection.x1, detection.y1, detection.x2, detection.y2},
+        });
+    }
+    return tracked;
+}
+
+static void maybe_save_event_snapshot(const DetectionEvent& event, const cv::Mat& rendered_frame) {
+    if (event.snapshot.empty() || rendered_frame.empty() ||
+        event.event_type == DetectionEventType::SightingEnd) {
+        return;
+    }
+
+    try {
+        const std::filesystem::path path(event.snapshot);
+        std::filesystem::create_directories(path.parent_path());
+        if (!cv::imwrite(path.string(), rendered_frame)) {
+            std::cerr << "[WARN] Failed to save event snapshot: " << path << "\n";
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "[WARN] Event snapshot error: " << e.what() << "\n";
+    }
 }
 
 static void print_detection_line(const char* prefix, const Detection& det) {
@@ -611,6 +658,18 @@ static void print_usage(const char* prog_name) {
         << "  --no-save-detection-frames Disable rendered detection frame saving\n"
         << "  --detection-dir <path>     Directory for saved detection frames (default: "
         << DEFAULT_DETECTION_FRAME_DIR << ")\n"
+        << "  --event-export         Enable backend event export\n"
+        << "  --no-event-export      Disable backend event export\n"
+        << "  --detector-id <id>     Detector id for app events (default: "
+        << DEFAULT_DETECTOR_ID << ")\n"
+        << "  --event-socket <path>  UDS path for live events (default: "
+        << DEFAULT_EVENT_SOCKET_PATH << ")\n"
+        << "  --track-iou <value>    Sighting match IoU threshold (default: "
+        << DEFAULT_TRACK_MATCH_IOU_THRESH << ")\n"
+        << "  --track-update-ms <n>  Sighting update throttle ms (default: "
+        << DEFAULT_TRACK_UPDATE_INTERVAL_MS << ")\n"
+        << "  --track-lost-ms <n>    Sighting lost timeout ms (default: "
+        << DEFAULT_TRACK_LOST_TIMEOUT_MS << ")\n"
         << "  --help                 Show this help message\n";
 }
 
@@ -660,6 +719,20 @@ static RuntimeConfig parse_args(int argc, char** argv) {
             cfg.save_detection_frames = false;
         } else if (arg == "--detection-dir" && i + 1 < argc) {
             cfg.detection_frame_dir = argv[++i];
+        } else if (arg == "--event-export") {
+            cfg.enable_event_export = true;
+        } else if (arg == "--no-event-export") {
+            cfg.enable_event_export = false;
+        } else if (arg == "--detector-id" && i + 1 < argc) {
+            cfg.detector_id = argv[++i];
+        } else if (arg == "--event-socket" && i + 1 < argc) {
+            cfg.event_socket_path = argv[++i];
+        } else if (arg == "--track-iou" && i + 1 < argc) {
+            cfg.track_match_iou_thresh = std::stof(argv[++i]);
+        } else if (arg == "--track-update-ms" && i + 1 < argc) {
+            cfg.track_update_interval_ms = std::stoi(argv[++i]);
+        } else if (arg == "--track-lost-ms" && i + 1 < argc) {
+            cfg.track_lost_timeout_ms = std::stoi(argv[++i]);
         } else if (arg == "--help" || arg == "-h") {
             print_usage(argv[0]);
             std::exit(0);
@@ -2104,6 +2177,30 @@ int main(int argc, char** argv) {
     float    last_fps      = 0.0f;
     DetectionEventLogger detection_logger;
     DetectionFrameSaver detection_frame_saver(runtime_config);
+
+    SightingTrackerConfig sighting_tracker_config;
+    sighting_tracker_config.detector_id = runtime_config.detector_id;
+    sighting_tracker_config.source = "hailo_detector";
+    sighting_tracker_config.snapshot_root = runtime_config.detection_frame_dir;
+    sighting_tracker_config.match_iou_threshold = runtime_config.track_match_iou_thresh;
+    sighting_tracker_config.update_interval_ms = runtime_config.track_update_interval_ms;
+    sighting_tracker_config.lost_timeout_ms = runtime_config.track_lost_timeout_ms;
+    SightingTracker sighting_tracker(sighting_tracker_config);
+
+    EventSinkConfig event_sink_config;
+    event_sink_config.jsonl_root = runtime_config.detection_frame_dir;
+    event_sink_config.uds_path = runtime_config.event_socket_path;
+    event_sink_config.enable_jsonl = runtime_config.enable_event_export;
+    event_sink_config.enable_uds = runtime_config.enable_event_export;
+    EventSink event_sink(event_sink_config);
+    if (runtime_config.enable_event_export) {
+        event_sink.start();
+        std::cout << "[INFO] Event export enabled. detector_id="
+                  << runtime_config.detector_id
+                  << " uds=" << runtime_config.event_socket_path
+                  << " jsonl_root=" << runtime_config.detection_frame_dir << "\n";
+    }
+
     PirGateFsm pir_fsm;
     auto     start_time    = std::chrono::steady_clock::now();
     float    active_elapsed_sec = 0.0f;
@@ -2221,6 +2318,18 @@ int main(int argc, char** argv) {
         draw_summary(rendered, frame_count, detections, last_fps, temperature_f);
         if (pir_gate_enabled) {
             draw_pir_status(rendered, false);
+        }
+
+        if (runtime_config.enable_event_export) {
+            const auto tracked_detections = to_tracked_detections(detections);
+            auto sighting_events = sighting_tracker.update(
+                tracked_detections,
+                rendered.cols,
+                rendered.rows);
+            for (auto& event : sighting_events) {
+                maybe_save_event_snapshot(event, rendered);
+                event_sink.enqueue(std::move(event));
+            }
         }
 
         detection_frame_saver.maybe_save(
