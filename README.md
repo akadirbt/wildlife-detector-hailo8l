@@ -8,6 +8,7 @@ Real-time wildlife detection and deterrent system built around a Raspberry Pi 5,
 - [Detector](docs/DETECTOR.md)
 - [Backend](docs/BACKEND.md)
 - [Frontend](docs/FRONTEND.md)
+- [Models and Training](docs/MODELS_AND_TRAINING.md)
 - [Roadmap](docs/FRONTEND_BACKEND_ROADMAP.md)
 - [Documentation Index](docs/README.md)
 
