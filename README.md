@@ -2,6 +2,15 @@
 
 Real-time wildlife detection and deterrent system built around a Raspberry Pi 5, Hailo-8L, CSI camera, PIR-triggered inference flow, and a companion web app stack.
 
+## Documentation
+
+- [System Overview](docs/SYSTEM_OVERVIEW.md)
+- [Detector](docs/DETECTOR.md)
+- [Backend](docs/BACKEND.md)
+- [Frontend](docs/FRONTEND.md)
+- [Roadmap](docs/FRONTEND_BACKEND_ROADMAP.md)
+- [Documentation Index](docs/README.md)
+
 ## What this project does
 
 This project is a wildlife monitoring and deterrence system for outdoor use.
