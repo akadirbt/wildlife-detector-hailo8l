@@ -20,9 +20,7 @@ detections/
 logs/
 *.log
 /kanna/
-other/*.cpp
-other/*.docx
-other/*.sh
+api_server/__pycache__/
 
 .DS_Store
 Thumbs.db

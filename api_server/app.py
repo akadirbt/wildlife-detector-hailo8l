@@ -9,7 +9,7 @@ from uuid import uuid4
 import yaml
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -37,7 +37,7 @@ def load_config() -> dict[str, Any]:
         "seed_event_count": 100,
         "detections_root": "detections",
         "frontend_root": "frontend",
-        "sample_media_root": "other",
+        "sample_media_root": "samples/media",
     }
     if not CONFIG_PATH.exists():
         return defaults
@@ -117,7 +117,7 @@ async def api_ask(payload: AskPayload) -> dict[str, Any]:
 @app.get("/stream.mjpg")
 async def stream_preview() -> RedirectResponse:
     latest = store.latest_detection()
-    target = latest["image"] if latest else "/other/20260417_202846_829_frame4190_deer.jpg"
+    target = latest["image"] if latest else "/media/20260417_202846_829_frame4190_deer.jpg"
     return RedirectResponse(url=target)
 
 
@@ -132,7 +132,7 @@ async def index() -> HTMLResponse:
 
 
 if sample_media_root.exists():
-    app.mount("/other", StaticFiles(directory=sample_media_root), name="other")
+    app.mount("/media", StaticFiles(directory=sample_media_root), name="media")
 if frontend_root.exists():
     app.mount("/", StaticFiles(directory=frontend_root, html=True), name="frontend")
 
@@ -140,20 +140,20 @@ if frontend_root.exists():
 def _make_demo_event(label: str) -> dict[str, Any]:
     label = label.lower().strip() or "deer"
     priority = "routine"
-    image = "/other/20260417_202846_829_frame4190_deer.jpg"
+    image = "/media/20260417_202846_829_frame4190_deer.jpg"
     box = {"x1": 420, "y1": 140, "x2": 618, "y2": 366}
     confidence = 0.84
     summary = "Browsing along the tree line."
 
     if label == "raccoon":
         priority = "priority"
-        image = "/other/20260417_200655_359_frame3384_raccoon.jpg"
+        image = "/media/20260417_200655_359_frame3384_raccoon.jpg"
         box = {"x1": 1000, "y1": 270, "x2": 1290, "y2": 522}
         confidence = 0.79
         summary = "Short pass near the bin line."
     elif label == "bear":
         priority = "critical"
-        image = "/other/20260417_203117_022_frame2677_bear.jpg"
+        image = "/media/20260417_203117_022_frame2677_bear.jpg"
         box = {"x1": 630, "y1": 180, "x2": 1126, "y2": 660}
         confidence = 0.92
         summary = "Critical class near the back gate."

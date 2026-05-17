@@ -23,7 +23,7 @@ DEMO_DETECTIONS = [
         "frame_w": 1536,
         "frame_h": 864,
         "box": {"x1": 1020, "y1": 262, "x2": 1310, "y2": 518},
-        "snapshot": "/other/20260417_200655_359_frame3384_raccoon.jpg",
+        "snapshot": "/media/20260417_200655_359_frame3384_raccoon.jpg",
         "summary": "North fence line, short pass near the trash bins.",
     },
     {
@@ -39,7 +39,7 @@ DEMO_DETECTIONS = [
         "frame_w": 1536,
         "frame_h": 864,
         "box": {"x1": 408, "y1": 137, "x2": 592, "y2": 360},
-        "snapshot": "/other/20260417_202846_829_frame4190_deer.jpg",
+        "snapshot": "/media/20260417_202846_829_frame4190_deer.jpg",
         "summary": "Stayed near the tree line for about 12 seconds.",
     },
     {
@@ -55,7 +55,7 @@ DEMO_DETECTIONS = [
         "frame_w": 1536,
         "frame_h": 864,
         "box": {"x1": 640, "y1": 180, "x2": 1140, "y2": 660},
-        "snapshot": "/other/20260417_203117_022_frame2677_bear.jpg",
+        "snapshot": "/media/20260417_203117_022_frame2677_bear.jpg",
         "summary": "Large silhouette near the back gate. Critical class.",
     },
 ]

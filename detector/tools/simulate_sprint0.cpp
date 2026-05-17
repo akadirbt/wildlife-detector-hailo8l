@@ -4,8 +4,8 @@
 #include <utility>
 #include <vector>
 
-#include "event_sink.hpp"
-#include "sighting_tracker.hpp"
+#include "../event_sink.hpp"
+#include "../sighting_tracker.hpp"
 
 static void print_events(const std::vector<DetectionEvent>& events, EventSink& sink) {
     for (auto event : events) {

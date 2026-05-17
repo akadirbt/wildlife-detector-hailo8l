@@ -15,7 +15,7 @@ Static mounts:
 
 ```text
 /           -> frontend/
-/other      -> other/
+/media      -> samples/media/
 ```
 
 Suggested local run once dependencies are installed:

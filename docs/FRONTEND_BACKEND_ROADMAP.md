@@ -1,5 +1,7 @@
 # Wildlife Detector App Roadmap
 
+Note: this roadmap was written before the repo cleanup pass. In the current repository layout, detector-side C++ files live under `detector/`, the roadmap itself lives under `docs/`, and demo media lives under `samples/media/`.
+
 Bu dokuman, mevcut Raspberry Pi 5 + Hailo detector sistemini bozmadan uzerine backend, PWA frontend, Kanna companion animasyonu ve AI asistan katmani eklemek icin kilitlenen plandir.
 
 Ana karar: calisan C++ detector core sade kalacak. Frontend, backend, AI, auth, animasyon ve mobil app mantigi detector binary'sinin icine girmeyecek.

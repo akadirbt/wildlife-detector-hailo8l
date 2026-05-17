@@ -2,22 +2,17 @@
 
 Real-time wildlife detection and deterrent system built around a Raspberry Pi 5, Hailo-8L, CSI camera, PIR-triggered inference flow, and a companion web app stack.
 
-## What is in this repo
+## Repo layout
 
-- `hailo_detector.cpp`, `gpio_trigger.hpp`
-  Main detector loop, PIR gating, MJPEG preview, deterrent audio, ultrasonic output, and hardware integration.
-- `detection_event.hpp`, `sighting_tracker.*`, `event_sink.*`
-  Event backbone for start/update/end sighting lifecycles plus JSONL and Unix domain socket output.
-- `api_server/`
-  FastAPI backend for status, detections, SSE events, and frontend hosting.
-- `frontend/`
-  Mobile-first PWA dashboard with live stream card, detections feed, Ask AI shell, and Kanna companion UI.
-- `tools/`
-  Small local simulation helper for Sprint 0 event testing.
-- `other/`
-  Demo snapshots and hardware photos used by the backend/frontend and project documentation.
+```text
+api_server/   FastAPI backend
+detector/     C++ detector core and Pi deployment files
+docs/         Roadmap and hardware documentation
+frontend/     Mobile-first PWA
+samples/      Demo media used by the app and docs
+```
 
-## Current architecture
+## Architecture
 
 ```text
 hailo_detector (C++)
@@ -41,6 +36,19 @@ frontend (Vite PWA)
   -> companion animation layer
 ```
 
+## What each folder does
+
+- `detector/`
+  Detector-side C++ code, event pipeline, systemd service file, and a small event simulation helper.
+- `api_server/`
+  Backend API for status, detections, SSE events, and frontend hosting.
+- `frontend/`
+  PWA shell with live stream UI, detections feed, Ask AI shell, and Kanna companion animation.
+- `docs/`
+  Project roadmap plus hardware photos.
+- `samples/media/`
+  Demo images used by the backend and frontend mock mode.
+
 ## Key features
 
 - 9-class wildlife detection: `bear`, `coyote`, `deer`, `fox`, `possum`, `raccoon`, `skunk`, `squirrel`, `turkey`
@@ -51,35 +59,13 @@ frontend (Vite PWA)
 - FastAPI API layer with SSE
 - Mobile-friendly frontend with Kanna companion overlay
 
-## Repo layout notes
-
-- The repo keeps production-facing frontend assets under `frontend/assets/kanna/`.
-- Large raw art working folders are intentionally excluded from version control to keep GitHub cleaner.
-- Build outputs, caches, detections, and local runtime logs are ignored.
-
-## Build and run
-
-### Detector
-
-```bash
-cmake -B build -S .
-cmake --build build --target hailo_detector -j4
-./build/hailo_detector
-```
-
-Preview:
-
-```text
-http://127.0.0.1:8090
-```
-
-### Backend
+## Run the backend
 
 ```bash
 uvicorn api_server.app:app --host 0.0.0.0 --port 8091
 ```
 
-### Frontend
+## Run the frontend
 
 ```bash
 cd frontend
@@ -87,6 +73,8 @@ npm install
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-## Project status
+## Notes
 
-The detector core, event pipeline, backend shell, and frontend MVP are all present in this repository. The longer implementation plan is documented in `FRONTEND_BACKEND_ROADMAP.md`.
+- Production-facing companion assets live under `frontend/assets/kanna/`.
+- Large raw art working folders are intentionally excluded to keep the repo easy to browse.
+- The longer implementation plan lives in `docs/FRONTEND_BACKEND_ROADMAP.md`.

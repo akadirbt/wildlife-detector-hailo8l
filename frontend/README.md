@@ -41,4 +41,4 @@ Kanna assets:
 frontend/assets/kanna/
 ```
 
-The app currently shows a fallback companion card until those PNG files are dropped in.
+The production Kanna PNG set is already included in this repository.
