@@ -19,7 +19,7 @@ build.ninja
 detections/
 logs/
 *.log
-kanna/
+/kanna/
 other/*.cpp
 other/*.docx
 other/*.sh
